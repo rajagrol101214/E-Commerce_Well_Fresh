@@ -70,7 +70,7 @@ public class AdminController {
 			Category saveCategory = categoryService.saveCategory(category);
 
 			if (ObjectUtils.isEmpty(saveCategory)) {
-				session.setAttribute("errorMsg", "Not saved ! internal erver error");
+				session.setAttribute("errorMsg", "Not saved ! internal error");
 			} else {
 
 				File saveFile = new ClassPathResource("static/img").getFile();

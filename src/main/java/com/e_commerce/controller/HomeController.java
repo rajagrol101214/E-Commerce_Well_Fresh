@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.e_commerce.model.Category;
 import com.e_commerce.model.Product;
 import com.e_commerce.model.UserDtls;
-import com.e_commerce.repository.ProductRepository;
 import com.e_commerce.service.CategoryService;
 import com.e_commerce.service.ProductService;
 import com.e_commerce.service.UserService;
@@ -41,6 +41,18 @@ public class HomeController {
 
 	@Autowired
 	private UserService userService;
+
+	@ModelAttribute
+	public void getUserDetails(Principal p, Model m) {
+		if (p != null) {
+			String email = p.getName();
+			UserDtls userDtls = userService.getUserByEmail(email);
+			m.addAttribute("user", userDtls);
+		}
+		
+		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
+		m.addAttribute("categorys", allActiveCategory);
+	}
 
 	@GetMapping("/")
 	public String index() {
@@ -75,8 +87,8 @@ public class HomeController {
 	}
 
 	@PostMapping("/saveUser")
-	public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file,
-			HttpSession session) throws IOException {
+	public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
+			throws IOException {
 
 		String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
 		user.setProfileImage(imageName);
@@ -100,4 +112,6 @@ public class HomeController {
 
 		return "redirect:/register";
 	}
+
+	
 }

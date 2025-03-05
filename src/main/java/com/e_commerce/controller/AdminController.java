@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.e_commerce.model.Category;
 import com.e_commerce.model.Product;
+import com.e_commerce.model.UserDtls;
 import com.e_commerce.service.CategoryService;
 import com.e_commerce.service.ProductService;
+import com.e_commerce.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -37,6 +40,20 @@ public class AdminController {
 
 	@Autowired
 	private ProductService productService;
+
+	@Autowired
+	private UserService userService;
+
+	@ModelAttribute
+	public void getUserDetails(Principal p, Model m) {
+		if (p != null) {
+			String email = p.getName();
+			UserDtls userDtls = userService.getUserByEmail(email);
+			m.addAttribute("user", userDtls);
+		}
+		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
+		m.addAttribute("categorys", allActiveCategory);
+	}
 
 	@GetMapping("/")
 	public String index() {
@@ -214,6 +231,25 @@ public class AdminController {
 		}
 
 		return "redirect:/admin/editProduct/" + product.getId();
+	}
+
+	@GetMapping("/users")
+	public String getAllUsers(Model m) {
+		List<UserDtls> users = userService.getAllUsers("ROLE_USER");
+		m.addAttribute("users", users);
+		return "/admin/users";
+	}
+
+	@GetMapping("/updateSts")
+	public String updateAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, HttpSession session) {
+
+		Boolean f = userService.updateAccountStatus(id, status);
+		if (f) {
+			session.setAttribute("succMsg", "Account is updated");
+		} else {
+			session.setAttribute("errorMsg", "Something wrong on server");
+		}
+		return "redirect:/admin/users";
 	}
 
 }

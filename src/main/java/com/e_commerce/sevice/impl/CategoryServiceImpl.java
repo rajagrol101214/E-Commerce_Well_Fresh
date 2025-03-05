@@ -11,11 +11,11 @@ import com.e_commerce.repository.CategoryRepository;
 import com.e_commerce.service.CategoryService;
 
 @Service
-public class CategoryServiceImpl implements CategoryService{
-	
+public class CategoryServiceImpl implements CategoryService {
+
 	@Autowired
 	private CategoryRepository categoryRepository;
-	
+
 	@Override
 	public Category saveCategory(Category category) {
 		return categoryRepository.save(category);
@@ -34,13 +34,12 @@ public class CategoryServiceImpl implements CategoryService{
 	@Override
 	public Boolean deleteCategory(int id) {
 		Category category = categoryRepository.findById(id).orElse(null);
-		
-		if(!ObjectUtils.isEmpty(category))
-		{
+
+		if (!ObjectUtils.isEmpty(category)) {
 			categoryRepository.delete(category);
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -50,6 +49,10 @@ public class CategoryServiceImpl implements CategoryService{
 		return category;
 	}
 
-	
+	@Override
+	public List<Category> getAllActiveCategory() {
+		List<Category> categories = categoryRepository.findByIsActiveTrue();
+		return categories;
+	}
 
 }

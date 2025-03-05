@@ -149,6 +149,8 @@ public class AdminController {
 		String imageName = image.isEmpty() ? "default.jpg" : image.getOriginalFilename();
 
 		product.setImage(imageName);
+		product.setDiscount(0);
+		product.setDiscountPrice(product.getPrice());
 
 		Product saveProduct = productService.saveProduct(product);
 
@@ -159,7 +161,7 @@ public class AdminController {
 			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
 					+ image.getOriginalFilename());
 
-			System.out.println(path);
+//			System.out.println(path);
 
 			Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
@@ -180,12 +182,38 @@ public class AdminController {
 	@GetMapping("/deleteProduct/{id}")
 	public String deleteProduct(@PathVariable int id, HttpSession session) {
 		Boolean deleteProduct = productService.deleteProduct(id);
-		if(deleteProduct) {
+		if (deleteProduct) {
 			session.setAttribute("succMsg", "Product delete success");
 		} else {
 			session.setAttribute("errorMsg", "Something wrong with server");
 		}
 		return "redirect:/admin/products";
+	}
+
+	@GetMapping("/editProduct/{id}")
+	public String editProduct(@PathVariable int id, Model m) {
+		m.addAttribute("product", productService.getProductById(id));
+		m.addAttribute("categories", categoryService.getAllCategory());
+		return "admin/edit_product";
+	}
+
+	@PostMapping("/updateProduct")
+	public String updateProduct(@ModelAttribute Product product, @RequestParam("file") MultipartFile image,
+			HttpSession session, Model m) {
+
+		if (product.getDiscount() < 0 || product.getDiscount() > 100) {
+			session.setAttribute("errorMsg", "Invalid DIscount");
+		} else {
+
+			Product updatProduct = productService.updateProduct(product, image);
+			if (!ObjectUtils.isEmpty(updatProduct)) {
+				session.setAttribute("succMsg", "Product update success");
+			} else {
+				session.setAttribute("errorMsg", "Something wrong with server");
+			}
+		}
+
+		return "redirect:/admin/editProduct/" + product.getId();
 	}
 
 }

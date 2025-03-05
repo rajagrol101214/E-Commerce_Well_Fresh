@@ -2,6 +2,8 @@ package com.e_commerce.service;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.e_commerce.model.Product;
 
 public interface ProductService {
@@ -11,4 +13,8 @@ public interface ProductService {
 	public List<Product> getAllProducts();
 
 	public Boolean deleteProduct(Integer id);
+	
+	public Product getProductById(Integer id);
+	
+	public Product updateProduct(Product product, MultipartFile image);
 }

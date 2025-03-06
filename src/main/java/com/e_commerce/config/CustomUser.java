@@ -40,7 +40,7 @@ public class CustomUser implements org.springframework.security.core.userdetails
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return true;
+		return user.getAccountNonLocked();
 	}
 
 	@Override

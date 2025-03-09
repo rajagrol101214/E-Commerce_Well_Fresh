@@ -10,7 +10,7 @@ public interface UserService {
 
 	public UserDtls getUserByEmail(String email);
 
-	public List<UserDtls> getAllUsers(String role);
+	public List<UserDtls> getUsers(String role);
 
 	public Boolean updateAccountStatus(Integer id, Boolean status);
 
@@ -24,7 +24,8 @@ public interface UserService {
 
 	public void updateUserResetToken(String email, String resetToken);
 	
-	public UserDtls getUserBYToken(String token);
+	public UserDtls getUserByToken(String token);
 	
 	public UserDtls updateUser(UserDtls user);
+
 }

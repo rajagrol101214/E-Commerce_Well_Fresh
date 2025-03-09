@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.e_commerce.model.Category;
 import com.e_commerce.model.Product;
 import com.e_commerce.model.UserDtls;
+import com.e_commerce.service.CartService;
 import com.e_commerce.service.CategoryService;
 import com.e_commerce.service.ProductService;
 import com.e_commerce.service.UserService;
@@ -44,13 +45,19 @@ public class AdminController {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private CartService cartService;
+
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
 		if (p != null) {
 			String email = p.getName();
 			UserDtls userDtls = userService.getUserByEmail(email);
 			m.addAttribute("user", userDtls);
+			Integer countCart = cartService.getCountCart(userDtls.getId());
+			m.addAttribute("countCart", countCart);
 		}
+
 		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
 		m.addAttribute("categorys", allActiveCategory);
 	}
@@ -80,14 +87,16 @@ public class AdminController {
 		String imageName = file != null ? file.getOriginalFilename() : "default.jpg";
 		category.setImageName(imageName);
 
-		if (categoryService.existCategory(category.getName())) {
-			session.setAttribute("errorMsg", "Category name already exists");
+		Boolean existCategory = categoryService.existCategory(category.getName());
+
+		if (existCategory) {
+			session.setAttribute("errorMsg", "Category Name already exists");
 		} else {
 
 			Category saveCategory = categoryService.saveCategory(category);
 
 			if (ObjectUtils.isEmpty(saveCategory)) {
-				session.setAttribute("errorMsg", "Not saved ! internal error");
+				session.setAttribute("errorMsg", "Not saved ! internal server error");
 			} else {
 
 				File saveFile = new ClassPathResource("static/img").getFile();
@@ -96,18 +105,19 @@ public class AdminController {
 						+ file.getOriginalFilename());
 
 				// System.out.println(path);
-
 				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-				session.setAttribute("succMsg", "Saved Successfully");
+				session.setAttribute("succMsg", "Saved successfully");
 			}
 		}
+
 		return "redirect:/admin/category";
 	}
 
 	@GetMapping("/deleteCategory/{id}")
 	public String deleteCategory(@PathVariable int id, HttpSession session) {
 		Boolean deleteCategory = categoryService.deleteCategory(id);
+
 		if (deleteCategory) {
 			session.setAttribute("succMsg", "category delete success");
 		} else {
@@ -131,6 +141,7 @@ public class AdminController {
 		String imageName = file.isEmpty() ? oldCategory.getImageName() : file.getOriginalFilename();
 
 		if (!ObjectUtils.isEmpty(category)) {
+
 			oldCategory.setName(category.getName());
 			oldCategory.setIsActive(category.getIsActive());
 			oldCategory.setImageName(imageName);
@@ -147,7 +158,6 @@ public class AdminController {
 						+ file.getOriginalFilename());
 
 				// System.out.println(path);
-
 				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 			}
 
@@ -168,7 +178,6 @@ public class AdminController {
 		product.setImage(imageName);
 		product.setDiscount(0);
 		product.setDiscountPrice(product.getPrice());
-
 		Product saveProduct = productService.saveProduct(product);
 
 		if (!ObjectUtils.isEmpty(saveProduct)) {
@@ -178,13 +187,12 @@ public class AdminController {
 			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
 					+ image.getOriginalFilename());
 
-//			System.out.println(path);
-
+			// System.out.println(path);
 			Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-			session.setAttribute("succMsg", "Product save Success");
+			session.setAttribute("succMsg", "Product Saved Success");
 		} else {
-			session.setAttribute("errorMsg", "Something wrong on server");
+			session.setAttribute("errorMsg", "something wrong on server");
 		}
 
 		return "redirect:/admin/loadAddProduct";
@@ -202,7 +210,7 @@ public class AdminController {
 		if (deleteProduct) {
 			session.setAttribute("succMsg", "Product delete success");
 		} else {
-			session.setAttribute("errorMsg", "Something wrong with server");
+			session.setAttribute("errorMsg", "Something wrong on server");
 		}
 		return "redirect:/admin/products";
 	}
@@ -219,33 +227,30 @@ public class AdminController {
 			HttpSession session, Model m) {
 
 		if (product.getDiscount() < 0 || product.getDiscount() > 100) {
-			session.setAttribute("errorMsg", "Invalid DIscount");
+			session.setAttribute("errorMsg", "invalid Discount");
 		} else {
-
-			Product updatProduct = productService.updateProduct(product, image);
-			if (!ObjectUtils.isEmpty(updatProduct)) {
+			Product updateProduct = productService.updateProduct(product, image);
+			if (!ObjectUtils.isEmpty(updateProduct)) {
 				session.setAttribute("succMsg", "Product update success");
 			} else {
-				session.setAttribute("errorMsg", "Something wrong with server");
+				session.setAttribute("errorMsg", "Something wrong on server");
 			}
 		}
-
 		return "redirect:/admin/editProduct/" + product.getId();
 	}
 
 	@GetMapping("/users")
 	public String getAllUsers(Model m) {
-		List<UserDtls> users = userService.getAllUsers("ROLE_USER");
+		List<UserDtls> users = userService.getUsers("ROLE_USER");
 		m.addAttribute("users", users);
 		return "/admin/users";
 	}
 
 	@GetMapping("/updateSts")
-	public String updateAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, HttpSession session) {
-
+	public String updateUserAccountStatus(@RequestParam Boolean status, @RequestParam Integer id, HttpSession session) {
 		Boolean f = userService.updateAccountStatus(id, status);
 		if (f) {
-			session.setAttribute("succMsg", "Account is updated");
+			session.setAttribute("succMsg", "Account Status Updated");
 		} else {
 			session.setAttribute("errorMsg", "Something wrong on server");
 		}

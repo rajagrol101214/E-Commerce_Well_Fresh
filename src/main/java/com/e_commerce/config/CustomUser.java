@@ -5,10 +5,12 @@ import java.util.Collection;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.e_commerce.model.UserDtls;
 
-public class CustomUser implements org.springframework.security.core.userdetails.UserDetails {
+
+public class CustomUser implements UserDetails {
 
 	private UserDtls user;
 

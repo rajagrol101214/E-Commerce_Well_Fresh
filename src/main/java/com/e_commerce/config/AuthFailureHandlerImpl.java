@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class AuthFailureHandlerImpl extends SimpleUrlAuthenticationFailureHandler {
 
-	@Autowired
+    @Autowired
 	private UserRepository userRepository;
 
 	@Autowired
@@ -35,7 +35,9 @@ public class AuthFailureHandlerImpl extends SimpleUrlAuthenticationFailureHandle
 		UserDtls userDtls = userRepository.findByEmail(email);
 
 		if (userDtls.getIsEnable()) {
+
 			if (userDtls.getAccountNonLocked()) {
+
 				if (userDtls.getFailedAttempt() < AppConstant.ATTEMPT_TIME) {
 					userService.increaseFailedAttempt(userDtls);
 				} else {
@@ -43,17 +45,18 @@ public class AuthFailureHandlerImpl extends SimpleUrlAuthenticationFailureHandle
 					exception = new LockedException("Your account is locked !! failed attempt 3");
 				}
 			} else {
+
 				if (userService.unlockAccountTimeExpired(userDtls)) {
-					exception = new LockedException("Your account is Unlocked !! Please try to login");
+					exception = new LockedException("Your account is unlocked !! Please try to login");
 				} else {
-					exception = new LockedException("your account is Locked !! Please try after sometime");
+					exception = new LockedException("your account is Locked !! Please try after sometimes");
 				}
 			}
+
 		} else {
 			exception = new LockedException("your account is inactive");
-
 		}
-
+		
 		super.setDefaultFailureUrl("/signin?error");
 		super.onAuthenticationFailure(request, response, exception);
 	}

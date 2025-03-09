@@ -39,7 +39,6 @@ public class CategoryServiceImpl implements CategoryService {
 			categoryRepository.delete(category);
 			return true;
 		}
-
 		return false;
 	}
 

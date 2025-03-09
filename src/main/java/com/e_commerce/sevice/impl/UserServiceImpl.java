@@ -41,18 +41,17 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<UserDtls> getAllUsers(String role) {
+	public List<UserDtls> getUsers(String role) {
 		return userRepository.findByRole(role);
-
 	}
 
 	@Override
 	public Boolean updateAccountStatus(Integer id, Boolean status) {
 
-		Optional<UserDtls> findByUser = userRepository.findById(id);
+		Optional<UserDtls> findByuser = userRepository.findById(id);
 
-		if (findByUser.isPresent()) {
-			UserDtls userDtls = findByUser.get();
+		if (findByuser.isPresent()) {
+			UserDtls userDtls = findByuser.get();
 			userDtls.setIsEnable(status);
 			userRepository.save(userDtls);
 			return true;
@@ -66,7 +65,6 @@ public class UserServiceImpl implements UserService {
 		int attempt = user.getFailedAttempt() + 1;
 		user.setFailedAttempt(attempt);
 		userRepository.save(user);
-
 	}
 
 	@Override
@@ -74,18 +72,17 @@ public class UserServiceImpl implements UserService {
 		user.setAccountNonLocked(false);
 		user.setLockTime(new Date());
 		userRepository.save(user);
-
 	}
 
 	@Override
 	public boolean unlockAccountTimeExpired(UserDtls user) {
 
 		long lockTime = user.getLockTime().getTime();
-		long unlockTime = lockTime + AppConstant.UNLOCK_DURATION_TIME;
+		long unLockTime = lockTime + AppConstant.UNLOCK_DURATION_TIME;
 
 		long currentTime = System.currentTimeMillis();
 
-		if (unlockTime < currentTime) {
+		if (unLockTime < currentTime) {
 			user.setAccountNonLocked(true);
 			user.setFailedAttempt(0);
 			user.setLockTime(null);
@@ -106,11 +103,10 @@ public class UserServiceImpl implements UserService {
 		UserDtls findByEmail = userRepository.findByEmail(email);
 		findByEmail.setResetToken(resetToken);
 		userRepository.save(findByEmail);
-
 	}
 
 	@Override
-	public UserDtls getUserBYToken(String token) {
+	public UserDtls getUserByToken(String token) {
 		return userRepository.findByResetToken(token);
 	}
 

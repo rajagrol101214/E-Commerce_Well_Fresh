@@ -27,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	private CartRepository cartRepository;
-	
+
 	@Autowired
 	private CommonUtil commonUtil;
 
@@ -88,6 +88,11 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public List<ProductOrder> getAllOrders() {
 		return orderRepository.findAll();
+	}
+
+	@Override
+	public ProductOrder getOrdersByOrderId(String orderId) {
+		return orderRepository.findByOrderId(orderId);
 	}
 
 }

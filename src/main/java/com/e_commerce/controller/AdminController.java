@@ -34,6 +34,7 @@ import com.e_commerce.service.UserService;
 import com.e_commerce.util.CommonUtil;
 import com.e_commerce.util.OrderStatus;
 
+import jakarta.mail.Session;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -54,7 +55,7 @@ public class AdminController {
 
 	@Autowired
 	private OrderService orderService;
-	
+
 	@Autowired
 	private CommonUtil commonUtil;
 
@@ -271,6 +272,7 @@ public class AdminController {
 	public String getAllOrders(Model m) {
 		List<ProductOrder> allOrders = orderService.getAllOrders();
 		m.addAttribute("orders", allOrders);
+		m.addAttribute("srch", false);
 		return "/admin/orders";
 	}
 
@@ -287,7 +289,7 @@ public class AdminController {
 		}
 
 		ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
-		
+
 		try {
 			commonUtil.sendMailForProductOrder(updateOrder, status);
 		} catch (Exception e) {
@@ -300,6 +302,28 @@ public class AdminController {
 			session.setAttribute("errorMsg", "Status not updated");
 		}
 		return "redirect:/admin/orders";
+	}
+
+	@GetMapping("/search-order")
+	public String searchProduct(@RequestParam String orderId, Model m, HttpSession session) {
+
+		if (orderId != null && orderId.length() > 0) {
+
+			ProductOrder orders = orderService.getOrdersByOrderId(orderId.trim());
+
+			if (ObjectUtils.isEmpty(orders)) {
+				session.setAttribute("errorMsg", "Incorrect orderId");
+				m.addAttribute("orderDtls", null);
+			} else {
+				m.addAttribute("orderDtls", orders);
+			}
+			m.addAttribute("srch", true);
+		} else {
+			List<ProductOrder> allOrders = orderService.getAllOrders();
+			m.addAttribute("orders", allOrders);
+			m.addAttribute("srch", false);
+		}
+		return "/admin/orders";
 	}
 
 }
